@@ -2,7 +2,40 @@ services:
   - type: web
     name: investment-watchdog
     runtime: python
+    plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120
-    healthCheckPath: /health
-    autoDeploy: true
+    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    disk:
+      name: investment-watchdog-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_PATH
+        value: /var/data/watchdog.db
+      - key: APP_TIMEZONE
+        value: Asia/Tokyo
+      - key: ENABLE_SCHEDULER
+        value: "1"
+      - key: SCAN_HOUR_JST
+        value: "16"
+      - key: SCAN_MINUTE_JST
+        value: "15"
+      - key: WATCHLIST
+        value: 3110.T,285A.T,6994.T,9434.T,9984.T,6330.T,346A.T
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: SYNC_API_TOKEN
+        generateValue: true
+      - key: DASHBOARD_USER
+        sync: false
+      - key: DASHBOARD_PASSWORD
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
